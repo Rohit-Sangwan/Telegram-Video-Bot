@@ -44,5 +44,5 @@ if ($webhookInfo) {
 echo "\n🎉 Setup complete!\n";
 echo "==================\n";
 echo "Your bot is ready to use!\n";
-echo "Commands: /start, /next, /random, /stats, /reset, /help\n";
+echo "Commands: /start, /next, /stats, /reset, /help\n";
 ?>

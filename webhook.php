@@ -7,6 +7,24 @@
 require_once 'config.php';
 require_once 'TelegramBot.php';
 require_once 'VideoManager.php';
+require_once 'RateLimiter.php';
+
+/**
+ * Send message with auto-delete scheduling
+ */
+function sendAutoDeleteMessage($bot, $chatId, $text, $keyboard = null, $deleteAfterMinutes = 1) {
+    $result = $bot->sendMessage($chatId, $text, $keyboard);
+    
+    if ($result && isset($result['result']['message_id'])) {
+        // Use reflection to access private scheduleDelete method
+        $reflection = new ReflectionClass($bot);
+        $scheduleDeleteMethod = $reflection->getMethod('scheduleDelete');
+        $scheduleDeleteMethod->setAccessible(true);
+        $scheduleDeleteMethod->invoke($bot, $result['result']['message_id'], $chatId, $deleteAfterMinutes, 'message');
+    }
+    
+    return $result;
+}
 
 // Get webhook input
 $input = file_get_contents('php://input');
@@ -20,6 +38,7 @@ if (!$update) {
 // Initialize classes
 $bot = new TelegramBot();
 $videoManager = new VideoManager();
+$rateLimiter = new RateLimiter();
 
 // Process message
 if (isset($update['message'])) {
@@ -52,7 +71,8 @@ if (isset($update['message'])) {
             }
         } else {
             // Non-admin users get a different message
-            $bot->sendMessage($chatId, "❌ <b>Access Denied</b>\n\nOnly admins can add videos to the library.\n\nUse /start to access your videos!");
+            $text = "❌ <b>Access Denied</b>\n\nOnly admins can add videos to the library.\n\nUse /start to access your videos!\n\n⏱️ <i>This message will auto-delete in 1 minute</i>";
+            sendAutoDeleteMessage($bot, $chatId, $text);
         }
         
         http_response_code(200);
@@ -76,7 +96,28 @@ if (isset($update['message'])) {
             if (!$bot->isChannelMember($userId)) {
                 $bot->sendAccessDenied($chatId, $firstName);
             } else {
-                handleNext($bot, $chatId, $userId, $firstName, $videoManager);
+                // Check rate limiting for /next command (same as callback)
+                if ($rateLimiter->isRateLimited($userId, 'next', 2, 1)) {
+                    $remaining = $rateLimiter->getRemainingTime($userId, 'next', 2);
+                    $text = "⏱️ <b>Please wait!</b>\n\n";
+                    $text .= "🚫 You're requesting videos too fast!\n";
+                    $text .= "⏳ Wait $remaining seconds before requesting the next video.\n\n";
+                    $text .= "💡 <i>This prevents server overload</i>\n";
+                    $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
+                    
+                    $keyboard = [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => '🔄 Try Again', 'callback_data' => 'next'],
+                                ['text' => '🏠 Main Menu', 'callback_data' => 'start']
+                            ]
+                        ]
+                    ];
+                    
+                    sendAutoDeleteMessage($bot, $chatId, $text, $keyboard);
+                } else {
+                    handleNext($bot, $chatId, $userId, $firstName, $videoManager);
+                }
             }
             break;
             
@@ -104,14 +145,6 @@ if (isset($update['message'])) {
             }
             break;
             
-        case '/random':
-            if (!$bot->isChannelMember($userId)) {
-                $bot->sendAccessDenied($chatId, $firstName);
-            } else {
-                handleRandom($bot, $chatId, $userId, $firstName, $videoManager);
-            }
-            break;
-            
         case '/support':
             $telegramId = $userId;
             $userName = $firstName;
@@ -127,7 +160,8 @@ if (isset($update['message'])) {
             $text .= "• Progress tracking problems\n";
             $text .= "• Technical difficulties\n\n";
             $text .= "🌐 <b>Click below to create a support ticket:</b>\n";
-            $text .= "Your information will be automatically filled!";
+            $text .= "Your information will be automatically filled!\n\n";
+            $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
             
             $keyboard = [
                 'inline_keyboard' => [
@@ -140,14 +174,15 @@ if (isset($update['message'])) {
                 ]
             ];
             
-            $bot->sendMessage($chatId, $text, $keyboard);
+            sendAutoDeleteMessage($bot, $chatId, $text, $keyboard);
             break;
             
         default:
             if (!$bot->isChannelMember($userId)) {
                 $bot->sendChannelJoinRequired($chatId, $firstName);
             } else {
-                $bot->sendMessage($chatId, "❓ Unknown command. Use /help to see available commands.");
+                $text = "❓ Unknown command. Use /help to see available commands.\n\n⏱️ <i>This message will auto-delete in 1 minute</i>";
+                sendAutoDeleteMessage($bot, $chatId, $text);
             }
             break;
     }
@@ -175,24 +210,23 @@ function handleNext($bot, $chatId, $userId, $firstName, $videoManager) {
     if ($result) {
         // Only send a simple confirmation, video already has caption
         $text = "✅ <b>Next Video Delivered!</b>\n\n";
-        $text .= "🎬 <b>Request #$requestCount</b>\n";
-        $text .= "📊 <b>Position:</b> {$video['index']} of {$video['total']}\n\n";
+        $text .= "🎬 <b>Request #$requestCount</b>\n\n";
         $text .= "🎯 <b>Continue watching?</b>";
         
         $keyboard = [
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Next Video', 'callback_data' => 'next'],
-                    ['text' => '🎲 Random', 'callback_data' => 'random']
+                    ['text' => '📊 My Stats', 'callback_data' => 'stats']
                 ],
                 [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
                     ['text' => '🏠 Main Menu', 'callback_data' => 'start']
                 ]
             ]
         ];
         
-        $bot->sendMessage($chatId, $text, $keyboard);
+        $text .= "\n\n⏱️ <i>This message will auto-delete in 1 minute</i>";
+        sendAutoDeleteMessage($bot, $chatId, $text, $keyboard);
         logEvent("User $userId requested next video (Request #$requestCount)");
     } else {
         $bot->sendErrorMessage($chatId, 'video_send_failed');
@@ -211,8 +245,7 @@ function handleReset($bot, $chatId, $userId, $firstName, $videoManager) {
     
     $text = "🔄 <b>Progress Reset Complete!</b>\n\n";
     $text .= "Hi $firstName! Your progress has been reset.\n\n";
-    $text .= "� <b>Starting Fresh:</b>\n";
-    $text .= "• Position: Back to beginning\n";
+    $text .= "🎯 <b>Starting Fresh:</b>\n";
     $text .= "• Progress: 0%\n";
     $text .= "• Status: Ready to watch\n\n";
     $text .= "🎯 <i>Ready for your video journey?</i>";
@@ -221,55 +254,18 @@ function handleReset($bot, $chatId, $userId, $firstName, $videoManager) {
         'inline_keyboard' => [
             [
                 ['text' => '▶️ Start Watching', 'callback_data' => 'next'],
-                ['text' => '🎲 Random Video', 'callback_data' => 'random']
+                ['text' => '📊 My Stats', 'callback_data' => 'stats']
             ]
         ]
     ];
     
-    $bot->sendMessage($chatId, $text, $keyboard);
+    $text .= "\n\n⏱️ <i>This message will auto-delete in 1 minute</i>";
+    sendAutoDeleteMessage($bot, $chatId, $text, $keyboard);
     logEvent("User $userId reset progress");
 }
 
 function handleHelp($bot, $chatId) {
     $bot->sendHelpMessage($chatId);
-}
-
-function handleRandom($bot, $chatId, $userId, $firstName, $videoManager) {
-    $video = $videoManager->getRandomVideo();
-    
-    if (!$video) {
-        $bot->sendErrorMessage($chatId, 'no_videos');
-        return;
-    }
-    
-    $requestCount = $bot->incrementUserRequestCount($userId);
-    $result = $bot->sendVideo($chatId, $video['file_id'], $video['index'], $requestCount);
-    
-    if ($result) {
-        // Send a simple confirmation message without duplicating the video success message
-        $text = "🎲 <b>Random Video Selected!</b>\n\n";
-        $text .= "🎬 <b>Request #$requestCount</b>\n";
-        $text .= "📊 <b>Video:</b> #{$video['index']}\n\n";
-        $text .= "🎯 <b>What's next?</b>";
-        
-        $keyboard = [
-            'inline_keyboard' => [
-                [
-                    ['text' => '🎲 Another Random', 'callback_data' => 'random'],
-                    ['text' => '▶️ Next Video', 'callback_data' => 'next']
-                ],
-                [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
-                    ['text' => '🏠 Main Menu', 'callback_data' => 'start']
-                ]
-            ]
-        ];
-        
-        $bot->sendMessage($chatId, $text, $keyboard);
-        logEvent("User $userId requested random video (Request #$requestCount)");
-    } else {
-        $bot->sendErrorMessage($chatId, 'video_send_failed');
-    }
 }
 
 // Handle callback queries (inline buttons)
@@ -335,14 +331,27 @@ if (isset($update['callback_query'])) {
             if (!$bot->isChannelMember($userId)) {
                 $bot->sendAccessDenied($chatId, $firstName);
             } else {
-                handleNext($bot, $chatId, $userId, $firstName, $videoManager);
-            }
-            break;
-        case 'random':
-            if (!$bot->isChannelMember($userId)) {
-                $bot->sendAccessDenied($chatId, $firstName);
-            } else {
-                handleRandom($bot, $chatId, $userId, $firstName, $videoManager);
+                // Check rate limiting (max 1 request per 2 seconds)
+                if ($rateLimiter->isRateLimited($userId, 'next', 2, 1)) {
+                    $remaining = $rateLimiter->getRemainingTime($userId, 'next', 2);
+                    $text = "⏱️ <b>Please wait!</b>\n\n";
+                    $text .= "🚫 You're clicking too fast!\n";
+                    $text .= "⏳ Wait $remaining seconds before requesting next video.\n\n";
+                    $text .= "💡 <i>This prevents server overload</i>";
+                    
+                    $keyboard = [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => '🔄 Try Again', 'callback_data' => 'next'],
+                                ['text' => '🏠 Main Menu', 'callback_data' => 'start']
+                            ]
+                        ]
+                    ];
+                    
+                    sendAutoDeleteMessage($bot, $chatId, $text, $keyboard);
+                } else {
+                    handleNext($bot, $chatId, $userId, $firstName, $videoManager);
+                }
             }
             break;
         case 'stats':
@@ -404,11 +413,7 @@ if (isset($update['callback_query'])) {
                 $keyboard = [
                     'inline_keyboard' => [
                         [
-                            ['text' => '▶️ Next Video', 'callback_data' => 'next'],
-                            ['text' => '🎲 Random', 'callback_data' => 'random']
-                        ],
-                        [
-                            ['text' => '📊 My Stats', 'callback_data' => 'stats'],
+                            ['text' => '🔄 Try Again', 'callback_data' => 'retry'],
                             ['text' => '🏠 Main Menu', 'callback_data' => 'start']
                         ]
                     ]

@@ -109,39 +109,46 @@ class TelegramBot {
     }
     
     /**
-     * Send video with modern UI and auto-deletion after 30 minutes
+     * Send video with enhanced protection and auto-deletion after 15 minutes
      */
     public function sendVideo($chatId, $fileId, $videoNumber = null, $userRequestCount = null) {
         if (empty($fileId)) {
-            logEvent("Empty file_id provided", 'error');
+            logEvent("Empty file_id provided for chat $chatId", 'error');
             return false;
         }
         
-        // Modern video caption format
+        // Log the attempt
+        logEvent("Attempting to send video to chat $chatId with file_id: " . substr($fileId, 0, 20) . "...");
+        
+        // Enhanced video caption
         $caption = "🎬 <b>Video Delivered!</b>\n\n";
-        if ($userRequestCount !== null) {
-            $caption .= "📊 <b>Your Request #$userRequestCount</b>\n";
-        }
-        $caption .= "⏱️ <b>Auto-Delete:</b> 30 minutes\n";
-        $caption .= "💾 <b>Save:</b> Forward to Saved Messages\n";
+        $caption .= "⏱️ <b>Auto-Delete:</b> 15 minutes\n";
         $caption .= "🎯 <i>Enjoy your video!</i>";
         
         $params = [
             'chat_id' => $chatId,
             'video' => $fileId,
             'caption' => $caption,
-            'parse_mode' => 'HTML'
+            'parse_mode' => 'HTML',
+            'protect_content' => true  // Prevent forwarding and downloading
         ];
         
         $result = $this->makeRequest('sendVideo', $params);
         
         if ($result && isset($result['result']['message_id'])) {
-            // Schedule VIDEO deletion after 30 minutes
-            $this->scheduleDelete($result['result']['message_id'], $chatId, 30, 'video');
-            logEvent("Video sent successfully to chat $chatId (Request #$userRequestCount) - Will auto-delete in 30 minutes");
+            // Schedule VIDEO deletion after 15 minutes
+            $this->scheduleDelete($result['result']['message_id'], $chatId, 15, 'video');
+            logEvent("Protected video sent successfully to chat $chatId (Request #$userRequestCount) - Will auto-delete in 15 minutes");
             return $result;
         } else {
-            logEvent("Failed to send video to chat $chatId", 'error');
+            // Enhanced error logging
+            $errorMsg = "Failed to send protected video to chat $chatId. ";
+            if (isset($result['error'])) {
+                $errorMsg .= "Error: " . $result['error'];
+            } else {
+                $errorMsg .= "API response: " . json_encode($result);
+            }
+            logEvent($errorMsg, 'error');
             return false;
         }
     }
@@ -183,7 +190,7 @@ class TelegramBot {
     }
     
     /**
-     * Process deletion queue (messages = 1 min, videos = 30 min)
+     * Process deletion queue (messages = 1 min, videos = 15 min)
      */
     public function processDeletionQueue() {
         if (!file_exists(DELETION_QUEUE_PATH)) {
@@ -255,8 +262,7 @@ class TelegramBot {
         $text .= "✨ <b>Your Personal Video Library</b>\n\n";
         $text .= "📊 <b>Your Progress:</b>\n";
         $text .= "• Videos watched: {$userStats['current_index']}\n";
-        $text .= "• Progress: {$userStats['percentage']}%\n";
-        $text .= "• Remaining: {$userStats['remaining']} videos\n\n";
+        $text .= "• Progress: {$userStats['percentage']}%\n\n";
         $text .= "🎯 <b>What would you like to do?</b>\n";
         $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
         
@@ -264,13 +270,10 @@ class TelegramBot {
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Next Video', 'callback_data' => 'next'],
-                    ['text' => '🎲 Random', 'callback_data' => 'random']
+                    ['text' => '📊 My Stats', 'callback_data' => 'stats']
                 ],
                 [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
-                    ['text' => '🆘 Help', 'callback_data' => 'help']
-                ],
-                [
+                    ['text' => '🆘 Help', 'callback_data' => 'help'],
                     ['text' => '🎫 Support', 'callback_data' => 'support_ticket']
                 ]
             ]
@@ -287,7 +290,7 @@ class TelegramBot {
     }
 
     /**
-     * Send modern stats message
+     * Send modern stats message (auto-delete after 1 minute)
      */
     public function sendStatsMessage($chatId, $userStats, $requestCount) {
         $progressBar = $this->createProgressBar($userStats['percentage']);
@@ -295,18 +298,17 @@ class TelegramBot {
         $text = "📊 <b>Your Video Statistics</b>\n\n";
         $text .= "🎬 <b>Progress Overview:</b>\n";
         $text .= "• Total requests: $requestCount\n";
-        $text .= "• Current position: {$userStats['current_index']}\n";
-        $text .= "• Completion: {$userStats['percentage']}%\n";
-        $text .= "• Remaining: {$userStats['remaining']} videos\n\n";
+        $text .= "• Progress: {$userStats['percentage']}%\n\n";
         $text .= "📈 <b>Progress Bar:</b>\n";
         $text .= $progressBar . "\n\n";
-        $text .= "🎯 <i>Keep watching to complete your collection!</i>";
+        $text .= "🎯 <i>Keep watching to complete your collection!</i>\n";
+        $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
         
         $keyboard = [
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Continue Watching', 'callback_data' => 'next'],
-                    ['text' => '🎲 Random Video', 'callback_data' => 'random']
+                    ['text' => '📊 View Stats', 'callback_data' => 'stats']
                 ],
                 [
                     ['text' => '🔄 Reset Progress', 'callback_data' => 'reset_confirm']
@@ -314,7 +316,14 @@ class TelegramBot {
             ]
         ];
         
-        return $this->sendMessage($chatId, $text, $keyboard);
+        $result = $this->sendMessage($chatId, $text, $keyboard);
+        
+        // Schedule deletion of stats message (1 minute)
+        if ($result && isset($result['result']['message_id'])) {
+            $this->scheduleDelete($result['result']['message_id'], $chatId, 1, 'message');
+        }
+        
+        return $result;
     }
 
     /**
@@ -325,7 +334,6 @@ class TelegramBot {
         $text .= "🎬 <b>Main Commands:</b>\n";
         $text .= "• /start - Welcome & status\n";
         $text .= "• /next - Get next video in sequence\n";
-        $text .= "• /random - Get random video\n";
         $text .= "• /stats - View your progress\n";
         $text .= "• /reset - Reset your progress\n";
         $text .= "• /support - Get support help\n\n";
@@ -333,19 +341,16 @@ class TelegramBot {
         $text .= "Use the buttons below for faster navigation!\n\n";
         $text .= "⚠️ <b>Auto-Delete Times:</b>\n";
         $text .= "• Messages: 1 minute\n";
-        $text .= "• Videos: 30 minutes";
+        $text .= "• Videos: 15 minutes";
         
         $keyboard = [
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Next Video', 'callback_data' => 'next'],
-                    ['text' => '🎲 Random', 'callback_data' => 'random']
+                    ['text' => '📊 My Stats', 'callback_data' => 'stats']
                 ],
                 [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
-                    ['text' => '🎫 Support', 'callback_data' => 'support_ticket']
-                ],
-                [
+                    ['text' => '🎫 Support', 'callback_data' => 'support_ticket'],
                     ['text' => '🏠 Back to Main', 'callback_data' => 'start']
                 ]
             ]
@@ -367,7 +372,6 @@ class TelegramBot {
     public function sendVideoSuccessMessage($chatId, $videoIndex, $totalVideos, $requestCount) {
         $text = "✅ <b>Video Delivered!</b>\n\n";
         $text .= "🎬 <b>Request #$requestCount</b>\n";
-        $text .= "📊 <b>Position:</b> $videoIndex of $totalVideos\n";
         $text .= "⏱️ <b>This message will auto-delete in 1 minute</b>\n\n";
         $text .= "🎯 <b>What's next?</b>";
         
@@ -375,10 +379,9 @@ class TelegramBot {
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Next Video', 'callback_data' => 'next'],
-                    ['text' => '🎲 Random', 'callback_data' => 'random']
+                    ['text' => '📊 My Stats', 'callback_data' => 'stats']
                 ],
                 [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
                     ['text' => '🏠 Main Menu', 'callback_data' => 'start']
                 ]
             ]
@@ -395,7 +398,7 @@ class TelegramBot {
     }
 
     /**
-     * Send completion message
+     * Send completion message (auto-delete after 1 minute)
      */
     public function sendCompletionMessage($chatId, $firstName, $requestCount) {
         $text = "🎉 <b>Congratulations, $firstName!</b>\n\n";
@@ -404,12 +407,13 @@ class TelegramBot {
         $text .= "📊 <b>Your Achievement:</b>\n";
         $text .= "• Total requests: $requestCount\n";
         $text .= "• Status: Master Viewer 🌟\n\n";
-        $text .= "🎯 <i>What would you like to do next?</i>";
+        $text .= "🎯 <i>What would you like to do next?</i>\n";
+        $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
         
         $keyboard = [
             'inline_keyboard' => [
                 [
-                    ['text' => '🎲 Random Video', 'callback_data' => 'random'],
+                    ['text' => '▶️ Next Video', 'callback_data' => 'next'],
                     ['text' => '🔄 Start Over', 'callback_data' => 'reset']
                 ],
                 [
@@ -418,11 +422,18 @@ class TelegramBot {
             ]
         ];
         
-        return $this->sendMessage($chatId, $text, $keyboard);
+        $result = $this->sendMessage($chatId, $text, $keyboard);
+        
+        // Schedule deletion of completion message (1 minute)
+        if ($result && isset($result['result']['message_id'])) {
+            $this->scheduleDelete($result['result']['message_id'], $chatId, 1, 'message');
+        }
+        
+        return $result;
     }
 
     /**
-     * Send error message
+     * Send error message (auto-delete after 1 minute)
      */
     public function sendErrorMessage($chatId, $errorType = 'general') {
         $messages = [
@@ -432,6 +443,7 @@ class TelegramBot {
         ];
         
         $text = $messages[$errorType] ?? $messages['general'];
+        $text .= "\n\n⏱️ <i>This message will auto-delete in 1 minute</i>";
         
         $keyboard = [
             'inline_keyboard' => [
@@ -442,7 +454,14 @@ class TelegramBot {
             ]
         ];
         
-        return $this->sendMessage($chatId, $text, $keyboard);
+        $result = $this->sendMessage($chatId, $text, $keyboard);
+        
+        // Schedule deletion of error message (1 minute)
+        if ($result && isset($result['result']['message_id'])) {
+            $this->scheduleDelete($result['result']['message_id'], $chatId, 1, 'message');
+        }
+        
+        return $result;
     }
 
     /**
@@ -581,7 +600,7 @@ class TelegramBot {
     }
 
     /**
-     * Send channel join required message
+     * Send channel join required message (auto-delete after 1 minute)
      */
     public function sendChannelJoinRequired($chatId, $firstName) {
         $text = "🔒 <b>Channel Membership Required</b>\n\n";
@@ -591,7 +610,8 @@ class TelegramBot {
         $text .= "• Get latest updates\n";
         $text .= "• Access exclusive content\n";
         $text .= "• Stay connected with community\n\n";
-        $text .= "📢 <b>After joining, click 'Check Membership' to continue!</b>";
+        $text .= "📢 <b>After joining, click 'Check Membership' to continue!</b>\n";
+        $text .= "⏱️ <i>This message will auto-delete in 1 minute</i>";
         
         $keyboard = [
             'inline_keyboard' => [
@@ -607,7 +627,14 @@ class TelegramBot {
             ]
         ];
         
-        return $this->sendMessage($chatId, $text, $keyboard);
+        $result = $this->sendMessage($chatId, $text, $keyboard);
+        
+        // Schedule deletion of channel join message (1 minute)
+        if ($result && isset($result['result']['message_id'])) {
+            $this->scheduleDelete($result['result']['message_id'], $chatId, 1, 'message');
+        }
+        
+        return $result;
     }
 
     /**
@@ -617,9 +644,9 @@ class TelegramBot {
         $text = "✅ <b>Membership Verified!</b>\n\n";
         $text .= "Welcome to the Video Bot, $firstName! 🎉\n\n";
         $text .= "🎬 <b>You now have access to:</b>\n";
-        $text .= "• Full video library\n";
+        $text .= "• Premium video library\n";
         $text .= "• Personal progress tracking\n";
-        $text .= "• Random video selection\n";
+        $text .= "• Sequential video experience\n";
         $text .= "• Priority support\n\n";
         $text .= "🚀 <b>Ready to start watching?</b>";
         
@@ -627,10 +654,9 @@ class TelegramBot {
             'inline_keyboard' => [
                 [
                     ['text' => '▶️ Start Watching', 'callback_data' => 'start_verified'],
-                    ['text' => '🎲 Random Video', 'callback_data' => 'random']
+                    ['text' => '📊 My Stats', 'callback_data' => 'stats']
                 ],
                 [
-                    ['text' => '📊 My Stats', 'callback_data' => 'stats'],
                     ['text' => '🆘 Help', 'callback_data' => 'help']
                 ]
             ]

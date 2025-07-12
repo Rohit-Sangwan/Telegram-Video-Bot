@@ -94,11 +94,24 @@ class VideoManager {
             return null;
         }
         
-        $randomIndex = array_rand($this->fileIds);
+        // Ensure we have a valid array
+        $videos = array_values($this->fileIds);
+        if (count($videos) === 0) {
+            return null;
+        }
+        
+        // Get a random index
+        $randomIndex = array_rand($videos);
+        
+        // Ensure we have a valid file_id
+        if (!isset($videos[$randomIndex]) || empty($videos[$randomIndex])) {
+            return null;
+        }
+        
         return [
-            'file_id' => $this->fileIds[$randomIndex],
+            'file_id' => $videos[$randomIndex],
             'index' => $randomIndex + 1,
-            'total' => count($this->fileIds)
+            'total' => count($videos)
         ];
     }
     

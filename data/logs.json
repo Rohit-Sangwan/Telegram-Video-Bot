@@ -1,0 +1,357 @@
+[
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Cron job started at 2025-07-12 05:22:03"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Starting deletion queue processing..."
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Deletion queue processed successfully"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Starting log cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Log cleanup completed - 0 old entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Starting system statistics update..."
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "System statistics updated - Total users: 0, Total videos: 391"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Starting progress cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Progress cleanup completed - 0 orphaned entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Starting data backup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Data backup completed - Success"
+    },
+    {
+        "timestamp": "2025-07-12 05:22:03",
+        "type": "info",
+        "message": "Cron job completed in 0.09 seconds"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Cron job started at 2025-07-12 05:35:35"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Starting deletion queue processing..."
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Deletion queue processed successfully"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Starting log cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Log cleanup completed - 0 old entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Starting system statistics update..."
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "System statistics updated - Total users: 0, Total videos: 391"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Starting progress cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Progress cleanup completed - 0 orphaned entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Starting data backup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Data backup completed - Success"
+    },
+    {
+        "timestamp": "2025-07-12 05:35:35",
+        "type": "info",
+        "message": "Cron job completed in 0.1 seconds"
+    },
+    {
+        "timestamp": "2025-07-12 05:51:56",
+        "type": "error",
+        "message": "HTTP Error 400 in deleteMessage: {\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: chat not found\"}"
+    },
+    {
+        "timestamp": "2025-07-12 05:51:56",
+        "type": "info",
+        "message": "Deleted test_message 999999 from chat 123456789"
+    },
+    {
+        "timestamp": "2025-07-12 05:51:56",
+        "type": "info",
+        "message": "Deleted 1 items: 1 messages, 0 videos"
+    },
+    {
+        "timestamp": "2025-07-12 05:52:32",
+        "type": "info",
+        "message": "Scheduled deletion of test_message 123456 in 1 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:07",
+        "type": "info",
+        "message": "Cron job started at 2025-07-12 05:55:07"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:07",
+        "type": "info",
+        "message": "Starting deletion queue processing..."
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "error",
+        "message": "HTTP Error 400 in deleteMessage: {\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: chat not found\"}"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Deleted test_message 123456 from chat 987654"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Deleted 1 items: 1 messages, 0 videos"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Deletion queue processed successfully"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Starting log cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Log cleanup completed - 0 old entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Starting system statistics update..."
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "System statistics updated - Total users: 0, Total videos: 391"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Starting progress cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Progress cleanup completed - 0 orphaned entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Starting data backup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Data backup completed - Success"
+    },
+    {
+        "timestamp": "2025-07-12 05:55:08",
+        "type": "info",
+        "message": "Cron job completed in 0.99 seconds"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:14",
+        "type": "info",
+        "message": "Scheduled deletion of message 1001 in 0.1 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:14",
+        "type": "info",
+        "message": "Scheduled deletion of video 1002 in 0.2 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:14",
+        "type": "info",
+        "message": "Scheduled deletion of message 1003 in 0.3 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:25",
+        "type": "error",
+        "message": "HTTP Error 400 in deleteMessage: {\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: chat not found\"}"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:25",
+        "type": "info",
+        "message": "Deleted message 1001 from chat 1001"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:25",
+        "type": "info",
+        "message": "Deleted 1 items: 1 messages, 0 videos"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:41",
+        "type": "error",
+        "message": "HTTP Error 400 in deleteMessage: {\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: chat not found\"}"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:41",
+        "type": "info",
+        "message": "Deleted video 1002 from chat 1002"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "error",
+        "message": "HTTP Error 400 in deleteMessage: {\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: chat not found\"}"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Deleted message 1003 from chat 1003"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Deleted 2 items: 1 messages, 1 videos"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Scheduled deletion of message 2001 in 0.1 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Scheduled deletion of video 2002 in 0.5 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Cron job started at 2025-07-12 05:57:42"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Starting deletion queue processing..."
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Deletion queue processed successfully"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Starting log cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Log cleanup completed - 0 old entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Starting system statistics update..."
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "System statistics updated - Total users: 0, Total videos: 391"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Starting progress cleanup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Progress cleanup completed - 0 orphaned entries removed"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Starting data backup..."
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Data backup completed - Success"
+    },
+    {
+        "timestamp": "2025-07-12 05:57:42",
+        "type": "info",
+        "message": "Cron job completed in 0.11 seconds"
+    },
+    {
+        "timestamp": "2025-07-12 08:23:34",
+        "type": "info",
+        "message": "Attempting to send video to chat 1089928728 with file_id: BAACAgQAAx0EXTlwqgAC..."
+    },
+    {
+        "timestamp": "2025-07-12 08:23:35",
+        "type": "info",
+        "message": "Scheduled deletion of video 685 in 15 minutes"
+    },
+    {
+        "timestamp": "2025-07-12 08:23:35",
+        "type": "info",
+        "message": "Protected video sent successfully to chat 1089928728 (Request #1) - Will auto-delete in 15 minutes"
+    }
+]

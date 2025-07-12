@@ -1,0 +1,20 @@
+[
+    {
+        "message_id": 2001,
+        "chat_id": 2001,
+        "delete_time": 1752299868,
+        "type": "message"
+    },
+    {
+        "message_id": 2002,
+        "chat_id": 2002,
+        "delete_time": 1752299892,
+        "type": "video"
+    },
+    {
+        "message_id": 685,
+        "chat_id": 1089928728,
+        "delete_time": 1752309515,
+        "type": "video"
+    }
+]

@@ -20,9 +20,9 @@ try {
     $bot = new TelegramBot();
     $videoManager = new VideoManager();
     
-    // Task 1: Process deletion queue
+    // Task 1: Process deletion queue (MOST IMPORTANT - run first)
     logEvent("Starting deletion queue processing...");
-    $bot->processDeletionQueue();
+    $deletionResult = $bot->processDeletionQueue();
     logEvent("Deletion queue processed successfully");
     
     // Task 2: Clean up old logs (keep last 1000 entries)
