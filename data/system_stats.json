@@ -1,6 +1,12 @@
 {
-    "total_videos": 391,
+    "total_videos": 0,
     "total_users": 0,
-    "average_progress": 0,
-    "last_updated": "2025-07-12 05:57:42"
+    "total_views": 0,
+    "total_likes": 0,
+    "total_completions": 0,
+    "active_users_today": 0,
+    "premium_users": 0,
+    "events": [],
+    "daily_stats": [],
+    "last_updated": 0
 }
